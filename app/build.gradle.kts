@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation("androidx.navigation:navigation-compose:2.7.0")
     implementation("io.github.raamcosta.compose-destinations:core:1.8.36-beta")
+    implementation("androidx.compose.material:material:1.7.0-beta07")
     ksp("io.github.raamcosta.compose-destinations:ksp:1.8.36-beta")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

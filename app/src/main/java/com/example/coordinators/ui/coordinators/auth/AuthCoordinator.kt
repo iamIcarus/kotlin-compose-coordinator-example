@@ -1,11 +1,10 @@
 package com.example.coordinators.ui.coordinators.auth
 
+import LoginScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
-import com.example.coordinators.ui.screens.login.LoginScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.coordinators.ui.coordinators.AppCoordinatorAction
 import com.example.coordinators.ui.coordinators.Coordinator
 import com.example.coordinators.ui.coordinators.CoordinatorAction
 import com.example.coordinators.ui.coordinators.GeneralAction
