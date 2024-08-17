@@ -12,9 +12,8 @@ sealed class GeneralAction : CoordinatorAction {
     data class Cancel(val reason: Any) : GeneralAction()
 }
 
-interface Router {
+interface Host {
     val activeCoordinator: Coordinator?
-    val navigator: Navigator
 }
 
 interface Coordinator {
@@ -25,9 +24,10 @@ interface Coordinator {
     fun handle(action: CoordinatorAction)
 }
 
-interface NavigatorCoordinator: Coordinator,Router
+interface HostCoordinator: Coordinator,Host
 
-interface RootCoordinator: NavigatorCoordinator{
+interface RootCoordinator: HostCoordinator{
+    val navigator: Navigator
     @Composable
     fun start(action: AppCoordinatorAction)
 }

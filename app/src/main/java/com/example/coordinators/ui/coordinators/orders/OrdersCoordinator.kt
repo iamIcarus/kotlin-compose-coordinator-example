@@ -2,7 +2,7 @@ package com.example.coordinators.ui.coordinators.orders
 import androidx.compose.runtime.Composable
 import com.example.coordinators.ui.coordinators.Coordinator
 import com.example.coordinators.ui.coordinators.CoordinatorAction
-import com.example.coordinators.ui.coordinators.NavigatorCoordinator
+import com.example.coordinators.ui.coordinators.HostCoordinator
 import com.example.coordinators.ui.coordinators.main.MainCoordinatorAction
 import com.example.coordinators.ui.navigation.NavHostBuilder
 import com.example.coordinators.ui.navigation.Navigable
@@ -20,7 +20,7 @@ sealed class OrdersCoordinatorAction : CoordinatorAction {
     data object GoToOrders : OrdersCoordinatorAction()
 }
 
-class OrdersCoordinator(private val parent: NavigatorCoordinator) : Coordinator {
+class OrdersCoordinator(private val parent: HostCoordinator) : Coordinator {
     //private val localNavigator: Navigator = Navigator(OrdersNavigationRoute.ORDER_LIST.route)
 
     override fun setupNavigation(builder: NavHostBuilder) {
@@ -50,6 +50,6 @@ class OrdersCoordinator(private val parent: NavigatorCoordinator) : Coordinator 
     }
 
     override fun navigate(route: Navigable) {
-        parent.navigator.navigateTo(route.route)
+        parent.navigate(route)
     }
 }

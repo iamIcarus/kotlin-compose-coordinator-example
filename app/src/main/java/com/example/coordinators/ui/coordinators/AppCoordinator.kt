@@ -21,7 +21,6 @@ sealed class AppCoordinatorAction : CoordinatorAction {
 }
 
 class AppCoordinator : RootCoordinator {
-    // Track the active coordinator with mutableStateOf for reactivity
     private var _activeCoordinator by mutableStateOf<Coordinator?>(null)
     override val activeCoordinator: Coordinator?
         get() = _activeCoordinator

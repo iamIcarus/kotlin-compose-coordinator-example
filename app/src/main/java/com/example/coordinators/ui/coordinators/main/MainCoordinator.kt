@@ -7,15 +7,11 @@ import androidx.compose.runtime.setValue
 import com.example.coordinators.ui.coordinators.AppCoordinatorAction
 import com.example.coordinators.ui.coordinators.Coordinator
 import com.example.coordinators.ui.coordinators.CoordinatorAction
-import com.example.coordinators.ui.coordinators.GeneralAction
-import com.example.coordinators.ui.coordinators.NavigatorCoordinator
+import com.example.coordinators.ui.coordinators.HostCoordinator
 import com.example.coordinators.ui.coordinators.orders.OrdersCoordinator
-import com.example.coordinators.ui.coordinators.orders.OrdersCoordinatorAction
 import com.example.coordinators.ui.coordinators.orders.OrdersNavigationRoute
-import com.example.coordinators.ui.navigation.NavHost
 import com.example.coordinators.ui.navigation.NavHostBuilder
 import com.example.coordinators.ui.navigation.Navigable
-import com.example.coordinators.ui.navigation.Navigator
 
 enum class MainNavigationRoute(override val route: String) : Navigable {
     MAIN("main"),
@@ -27,12 +23,10 @@ sealed class MainCoordinatorAction : CoordinatorAction {
     data object GoToMain : MainCoordinatorAction()
 }
 
-class MainCoordinator(private val parent: NavigatorCoordinator) : NavigatorCoordinator {
+class MainCoordinator(private val parent: HostCoordinator) : HostCoordinator {
     private var _activeCoordinator by mutableStateOf<Coordinator?>(null)
     override val activeCoordinator: Coordinator?
         get() = _activeCoordinator
-
-    override val navigator: Navigator = parent.navigator
 
     private val ordersCoordinator: OrdersCoordinator by lazy { OrdersCoordinator(this) }
 
@@ -60,6 +54,6 @@ class MainCoordinator(private val parent: NavigatorCoordinator) : NavigatorCoord
     }
 
     override fun navigate(route: Navigable) {
-        navigator.navigateTo(route.route)
+        parent.navigate(route)
     }
 }
