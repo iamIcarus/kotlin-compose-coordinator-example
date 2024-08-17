@@ -1,5 +1,3 @@
-Here’s a `README.md` that provides a description, explanation, and usage guide for your Kotlin Compose Coordinator architecture:
-
 ```markdown
 # Kotlin Compose Coordinator Example
 
