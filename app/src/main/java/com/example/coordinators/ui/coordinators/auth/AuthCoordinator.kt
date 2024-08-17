@@ -23,7 +23,7 @@ sealed class AuthCoordinatorAction : CoordinatorAction {
 }
 
 class AuthCoordinator(
-    private val parent: HostCoordinator
+    override val parent: Coordinator
 ) : Coordinator {
 
     override fun setupNavigation(builder: NavHostBuilder) {
@@ -46,9 +46,5 @@ class AuthCoordinator(
             is AuthCoordinatorAction.GoToSettings -> navigate(AuthNavigationRoute.SETTINGS)
             else -> throw IllegalArgumentException("Unsupported action")
         }
-    }
-
-    override fun navigate(route: Navigable) {
-        parent.navigate(route)
     }
 }

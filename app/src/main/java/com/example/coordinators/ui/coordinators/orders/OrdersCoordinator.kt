@@ -20,7 +20,9 @@ sealed class OrdersCoordinatorAction : CoordinatorAction {
     data object GoToOrders : OrdersCoordinatorAction()
 }
 
-class OrdersCoordinator(private val parent: HostCoordinator) : Coordinator {
+class OrdersCoordinator(
+    override val parent: Coordinator
+) : Coordinator {
     //private val localNavigator: Navigator = Navigator(OrdersNavigationRoute.ORDER_LIST.route)
 
     override fun setupNavigation(builder: NavHostBuilder) {
@@ -47,9 +49,5 @@ class OrdersCoordinator(private val parent: HostCoordinator) : Coordinator {
             }
             else -> throw IllegalArgumentException("Unsupported action")
         }
-    }
-
-    override fun navigate(route: Navigable) {
-        parent.navigate(route)
     }
 }

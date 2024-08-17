@@ -23,7 +23,9 @@ sealed class MainCoordinatorAction : CoordinatorAction {
     data object GoToMain : MainCoordinatorAction()
 }
 
-class MainCoordinator(private val parent: HostCoordinator) : HostCoordinator {
+class MainCoordinator(
+    override val parent: Coordinator
+) : HostCoordinator {
     private var _activeCoordinator by mutableStateOf<Coordinator?>(null)
     override val activeCoordinator: Coordinator?
         get() = _activeCoordinator
@@ -51,9 +53,5 @@ class MainCoordinator(private val parent: HostCoordinator) : HostCoordinator {
             }
             else -> throw IllegalArgumentException("Unsupported action")
         }
-    }
-
-    override fun navigate(route: Navigable) {
-        parent.navigate(route)
     }
 }

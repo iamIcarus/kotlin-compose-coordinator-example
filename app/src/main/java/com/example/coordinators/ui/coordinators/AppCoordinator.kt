@@ -20,7 +20,9 @@ sealed class AppCoordinatorAction : CoordinatorAction {
     data object LogOut : AppCoordinatorAction()
 }
 
-class AppCoordinator : RootCoordinator {
+class AppCoordinator() : RootCoordinator {
+    override val parent: Coordinator? = null
+
     private var _activeCoordinator by mutableStateOf<Coordinator?>(null)
     override val activeCoordinator: Coordinator?
         get() = _activeCoordinator
