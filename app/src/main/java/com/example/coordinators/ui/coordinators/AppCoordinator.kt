@@ -65,10 +65,5 @@ class AppCoordinator() : RootCoordinator {
     override fun navigate(route: Navigable) {
         navigator.navigateTo(route.route)
     }
-
-    override fun setupNavigation(builder: NavHostBuilder) {
-
-    }
-
 }
 
