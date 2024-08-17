@@ -20,8 +20,9 @@ sealed class AppCoordinatorAction : CoordinatorAction {
     data object LogOut : AppCoordinatorAction()
 }
 
-class AppCoordinator : RootCoordinator {
-    // Track the active coordinator with mutableStateOf for reactivity
+class AppCoordinator() : RootCoordinator {
+    override val parent: Coordinator? = null
+
     private var _activeCoordinator by mutableStateOf<Coordinator?>(null)
     override val activeCoordinator: Coordinator?
         get() = _activeCoordinator
@@ -64,10 +65,5 @@ class AppCoordinator : RootCoordinator {
     override fun navigate(route: Navigable) {
         navigator.navigateTo(route.route)
     }
-
-    override fun setupNavigation(builder: NavHostBuilder) {
-
-    }
-
 }
 

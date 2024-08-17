@@ -6,10 +6,9 @@ import com.example.coordinators.ui.coordinators.AppCoordinatorAction
 import com.example.coordinators.ui.coordinators.Coordinator
 import com.example.coordinators.ui.coordinators.CoordinatorAction
 import com.example.coordinators.ui.coordinators.GeneralAction
-import com.example.coordinators.ui.coordinators.NavigatorCoordinator
+import com.example.coordinators.ui.coordinators.HostCoordinator
 import com.example.coordinators.ui.navigation.NavHostBuilder
 import com.example.coordinators.ui.navigation.Navigable
-import com.example.coordinators.ui.navigation.Navigator
 import com.example.coordinators.ui.screens.login.SettingsScreen
 
 enum class AuthNavigationRoute(override val route: String) : Navigable {
@@ -24,7 +23,7 @@ sealed class AuthCoordinatorAction : CoordinatorAction {
 }
 
 class AuthCoordinator(
-    private val parent: NavigatorCoordinator
+    override val parent: Coordinator
 ) : Coordinator {
 
     override fun setupNavigation(builder: NavHostBuilder) {
@@ -47,9 +46,5 @@ class AuthCoordinator(
             is AuthCoordinatorAction.GoToSettings -> navigate(AuthNavigationRoute.SETTINGS)
             else -> throw IllegalArgumentException("Unsupported action")
         }
-    }
-
-    override fun navigate(route: Navigable) {
-        parent.navigator.navigateTo(route.route)
     }
 }
