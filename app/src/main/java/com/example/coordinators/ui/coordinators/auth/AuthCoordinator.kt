@@ -2,17 +2,17 @@ package com.example.coordinators.ui.coordinators.auth
 
 import LoginScreen
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import com.example.coordinators.ui.coordinators.AppCoordinatorAction
 import com.example.coordinators.ui.coordinators.Coordinator
 import com.example.coordinators.ui.coordinators.CoordinatorAction
 import com.example.coordinators.ui.coordinators.GeneralAction
-import com.example.coordinators.ui.coordinators.NavigationRoute
-import com.example.coordinators.ui.coordinators.Router
+import com.example.coordinators.ui.coordinators.NavigatorCoordinator
+import com.example.coordinators.ui.navigation.NavHostBuilder
+import com.example.coordinators.ui.navigation.Navigable
+import com.example.coordinators.ui.navigation.Navigator
 import com.example.coordinators.ui.screens.login.SettingsScreen
 
-enum class AuthNavigationRoute(override val title: String) : NavigationRoute {
+enum class AuthNavigationRoute(override val route: String) : Navigable {
     LOGIN("login"),
     SETTINGS("settings"),
 }
@@ -24,46 +24,32 @@ sealed class AuthCoordinatorAction : CoordinatorAction {
 }
 
 class AuthCoordinator(
-    private val navController: NavHostController,
-    override val initialScreen: NavigationRoute = AuthNavigationRoute.LOGIN
-): Coordinator , Router {
+    private val parent: NavigatorCoordinator
+) : Coordinator {
 
+    override fun setupNavigation(builder: NavHostBuilder) {
+        builder.composable(AuthNavigationRoute.LOGIN) {
+            LoginScreen(coordinator = this@AuthCoordinator)
+        }
+        builder.composable(AuthNavigationRoute.SETTINGS) {
+            SettingsScreen(coordinator = this@AuthCoordinator)
+        }
+    }
+
+    @Composable
     override fun handle(action: CoordinatorAction) {
         when (action) {
             is GeneralAction.Done -> println("Done action with data: ${action.data}")
             is GeneralAction.Cancel -> println("Cancelled with reason: ${action.reason}")
             is AuthCoordinatorAction.GoToSettings -> navigate(AuthNavigationRoute.SETTINGS)
-            is AuthCoordinatorAction.GoBack -> navController.popBackStack()
-            is AuthCoordinatorAction.Authenticated -> { /* not implemented*/ }
+            is AuthCoordinatorAction.Authenticated -> parent.handle(AppCoordinatorAction.StartMainFlow)
+            is AuthCoordinatorAction.GoBack -> navigate(AuthNavigationRoute.LOGIN)
+            is AuthCoordinatorAction.GoToSettings -> navigate(AuthNavigationRoute.SETTINGS)
             else -> throw IllegalArgumentException("Unsupported action")
         }
     }
 
-    @Composable
-    override fun start() {
-        NavHost(navController = navController, startDestination = initialScreen.title) {
-            composable(AuthNavigationRoute.LOGIN.title) {
-                LoginScreen(coordinator = this@AuthCoordinator)
-            }
-            composable(AuthNavigationRoute.SETTINGS.title) {
-                SettingsScreen(coordinator = this@AuthCoordinator)
-            }
-        }
-    }
-
-    override fun navigate(route: NavigationRoute) {
-        when (route) {
-            AuthNavigationRoute.LOGIN -> {
-                navController.navigate(route.title) {
-                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                }
-            }
-
-            AuthNavigationRoute.SETTINGS -> {
-                navController.navigate(route.title)
-            }
-
-            else -> throw IllegalArgumentException("Unsupported route")
-        }
+    override fun navigate(route: Navigable) {
+        parent.navigator.navigateTo(route.route)
     }
 }

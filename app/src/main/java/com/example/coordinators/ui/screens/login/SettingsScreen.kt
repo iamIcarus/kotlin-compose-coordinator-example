@@ -9,10 +9,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.coordinators.ui.coordinators.Coordinator
+import com.example.coordinators.ui.coordinators.CoordinatorAction
 import com.example.coordinators.ui.coordinators.auth.AuthCoordinatorAction
 
 @Composable
 fun <T : Coordinator> SettingsScreen(coordinator: T) {
+    var action by remember { mutableStateOf<CoordinatorAction?>(null) }
+
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
             text = "Settings",
@@ -67,18 +70,23 @@ fun <T : Coordinator> SettingsScreen(coordinator: T) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Button(
-                onClick = { coordinator.handle(AuthCoordinatorAction.GoBack) },
+                onClick = { action = AuthCoordinatorAction.GoBack },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Save")
             }
             Spacer(modifier = Modifier.width(16.dp))
             Button(
-                onClick = { coordinator.handle(AuthCoordinatorAction.GoBack) },
+                onClick = { action = AuthCoordinatorAction.GoBack },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Go Back")
             }
         }
+    }
+
+    action?.let {
+        coordinator.handle(it)
+        action = null
     }
 }

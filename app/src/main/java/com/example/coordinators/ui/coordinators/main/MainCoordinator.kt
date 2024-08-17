@@ -1,43 +1,65 @@
 package com.example.coordinators.ui.coordinators.main
-
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import MainScreen
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-import com.example.coordinators.ui.screens.MainScreen
-import com.example.coordinators.ui.screens.orders.OrderDetailScreen
-import com.example.coordinators.ui.screens.orders.OrderListScreen
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.example.coordinators.ui.coordinators.AppCoordinatorAction
+import com.example.coordinators.ui.coordinators.Coordinator
+import com.example.coordinators.ui.coordinators.CoordinatorAction
+import com.example.coordinators.ui.coordinators.GeneralAction
+import com.example.coordinators.ui.coordinators.NavigatorCoordinator
+import com.example.coordinators.ui.coordinators.orders.OrdersCoordinator
+import com.example.coordinators.ui.coordinators.orders.OrdersCoordinatorAction
+import com.example.coordinators.ui.coordinators.orders.OrdersNavigationRoute
+import com.example.coordinators.ui.navigation.NavHost
+import com.example.coordinators.ui.navigation.NavHostBuilder
+import com.example.coordinators.ui.navigation.Navigable
+import com.example.coordinators.ui.navigation.Navigator
 
-class MainCoordinator(private val navController: NavHostController) {
+enum class MainNavigationRoute(override val route: String) : Navigable {
+    MAIN("main"),
+}
+
+sealed class MainCoordinatorAction : CoordinatorAction {
+    data object LogOut : MainCoordinatorAction()
+    data object GoToOrders : MainCoordinatorAction()
+    data object GoToMain : MainCoordinatorAction()
+}
+
+class MainCoordinator(private val parent: NavigatorCoordinator) : NavigatorCoordinator {
+    private var _activeCoordinator by mutableStateOf<Coordinator?>(null)
+    override val activeCoordinator: Coordinator?
+        get() = _activeCoordinator
+
+    override val navigator: Navigator = parent.navigator
+
+    private val ordersCoordinator: OrdersCoordinator by lazy { OrdersCoordinator(this) }
+
+    override fun setupNavigation(builder: NavHostBuilder) {
+        builder.composable(MainNavigationRoute.MAIN) {
+            MainScreen(coordinator = this@MainCoordinator)
+        }
+        ordersCoordinator.setupNavigation(builder)
+    }
+
     @Composable
-    fun start() {
-        NavHost(navController = navController, startDestination = "mainScreen") {
-            composable("mainScreen") {
-                MainScreen(onOrdersClick = {
-                    goToOrders()
-                })
+    override fun handle(action: CoordinatorAction) {
+        when (action) {
+            is MainCoordinatorAction.LogOut -> parent.handle(AppCoordinatorAction.LogOut)
+            is MainCoordinatorAction.GoToOrders -> {
+                _activeCoordinator = ordersCoordinator
+                navigate(OrdersNavigationRoute.ORDER_LIST)
             }
-            composable("orderListScreen") {
-                OrderListScreen(onOrderClick = { orderId ->
-                    goToOrderDetail(orderId)
-                })
+            is MainCoordinatorAction.GoToMain -> {
+                _activeCoordinator = this
+                navigate(MainNavigationRoute.MAIN)
             }
-            composable("orderDetailScreen/{orderId}") { backStackEntry ->
-                val orderId = backStackEntry.arguments?.getString("orderId")
-                OrderDetailScreen(orderId, onBackClick = {
-                    navController.popBackStack()  // Navigates back to the order list
-                })
-            }
+            else -> throw IllegalArgumentException("Unsupported action")
         }
     }
 
-    private fun goToOrders() {
-        navController.navigate("orderListScreen")
-    }
-
-    private fun goToOrderDetail(orderId: String) {
-        navController.navigate("orderDetailScreen/$orderId")
+    override fun navigate(route: Navigable) {
+        navigator.navigateTo(route.route)
     }
 }
