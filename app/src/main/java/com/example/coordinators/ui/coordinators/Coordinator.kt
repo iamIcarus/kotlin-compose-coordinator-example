@@ -18,6 +18,7 @@ interface Host {
 
 interface Coordinator {
     fun navigate(route: Navigable)
+    val parent: Coordinator?
     fun setupNavigation(builder: NavHostBuilder)
 
     @Composable
