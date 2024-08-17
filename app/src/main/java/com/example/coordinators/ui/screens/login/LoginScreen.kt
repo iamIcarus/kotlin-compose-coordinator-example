@@ -10,13 +10,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.coordinators.ui.coordinators.Coordinator
+import com.example.coordinators.ui.coordinators.CoordinatorAction
 import com.example.coordinators.ui.coordinators.auth.AuthCoordinatorAction
 
 @Composable
 fun <T : Coordinator> LoginScreen(coordinator: T) {
+    var action by remember { mutableStateOf<CoordinatorAction?>(null) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         IconButton(
-            onClick = { coordinator.handle(AuthCoordinatorAction.GoToSettings) },
+            onClick = { action = AuthCoordinatorAction.GoToSettings },
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(16.dp)
@@ -61,9 +64,14 @@ fun <T : Coordinator> LoginScreen(coordinator: T) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(onClick = { coordinator.handle(AuthCoordinatorAction.Authenticated) }) {
+            Button(onClick = { action = AuthCoordinatorAction.Authenticated }) {
                 Text("Login")
             }
         }
+    }
+
+    action?.let {
+        coordinator.handle(it)
+        action = null
     }
 }

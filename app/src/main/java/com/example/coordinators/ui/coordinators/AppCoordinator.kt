@@ -1,49 +1,58 @@
 package com.example.coordinators.ui.coordinators
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.example.coordinators.ui.coordinators.auth.AuthCoordinator
 import com.example.coordinators.ui.coordinators.auth.AuthNavigationRoute
 import com.example.coordinators.ui.coordinators.main.MainCoordinator
+import com.example.coordinators.ui.coordinators.main.MainNavigationRoute
+import com.example.coordinators.ui.navigation.NavHost
+import com.example.coordinators.ui.navigation.NavHostBuilder
+import com.example.coordinators.ui.navigation.Navigable
+import com.example.coordinators.ui.navigation.Navigator
+
 
 sealed class AppCoordinatorAction : CoordinatorAction {
-    data object GoToMain : AppCoordinatorAction()
-    data object GoToLogin : AppCoordinatorAction()
+    data object StartMainFlow : AppCoordinatorAction()
+    data object StartLoginFlow : AppCoordinatorAction()
     data object LogOut : AppCoordinatorAction()
 }
 
-class AppCoordinator(
-    private val navController: NavHostController
-) : RootCoordinator{
+class AppCoordinator : RootCoordinator {
+    // Track the active coordinator with mutableStateOf for reactivity
+    private var _activeCoordinator by mutableStateOf<Coordinator?>(null)
+    override val activeCoordinator: Coordinator?
+        get() = _activeCoordinator
 
-    private var _authCoordinator: AuthCoordinator? = null
-    private var _mainCoordinator: MainCoordinator? = null
+    // Root navigator that manages all flows
+    override val navigator: Navigator = Navigator("root")
 
-    private val authCoordinator: AuthCoordinator
-        get() {
-            if (_authCoordinator == null) {
-                _authCoordinator = AuthCoordinator(navController)
-            }
-            return _authCoordinator!!
-        }
+    private val authCoordinator: Coordinator by lazy { AuthCoordinator(this) }
+    private val mainCoordinator: Coordinator by lazy { MainCoordinator(this) }
 
-    private val mainCoordinator: MainCoordinator
-        get() {
-            if (_mainCoordinator == null) {
-                _mainCoordinator = MainCoordinator(navController)
-            }
-            return _mainCoordinator!!
-        }
 
     @Composable
     override fun handle(action: CoordinatorAction) {
         when (action) {
-            is GeneralAction.Done -> println("Done action with data: ${action.data}")
-            is GeneralAction.Cancel -> println("Cancelled with reason: ${action.reason}")
-            is AppCoordinatorAction.GoToMain -> mainCoordinator.start()
-            is AppCoordinatorAction.GoToLogin ->  authCoordinator.start()
-            is AppCoordinatorAction.LogOut ->  authCoordinator.start()
+            is AppCoordinatorAction.StartMainFlow -> {
+                _activeCoordinator = mainCoordinator
+                navigator.navigateTo(MainNavigationRoute.MAIN.route)
+            }
+            is AppCoordinatorAction.StartLoginFlow -> {
+                _activeCoordinator = authCoordinator
+                navigator.navigateTo(AuthNavigationRoute.LOGIN.route)
+            }
+            is AppCoordinatorAction.LogOut -> {
+                _activeCoordinator = authCoordinator
+                navigator.navigateTo(AuthNavigationRoute.LOGIN.route)
+            }
             else -> throw IllegalArgumentException("Unsupported action")
+        }
+
+        NavHost(navigator = navigator) {
+            _activeCoordinator?.setupNavigation(this)
         }
     }
 
@@ -51,4 +60,14 @@ class AppCoordinator(
     override fun start(action: AppCoordinatorAction) {
         handle(action)
     }
+
+    override fun navigate(route: Navigable) {
+        navigator.navigateTo(route.route)
+    }
+
+    override fun setupNavigation(builder: NavHostBuilder) {
+
+    }
+
 }
+
