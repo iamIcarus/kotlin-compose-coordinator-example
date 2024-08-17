@@ -1,161 +1,190 @@
-# Kotlin Compose Coordinator Pattern Example
+Here’s a `README.md` that provides a description, explanation, and usage guide for your Kotlin Compose Coordinator architecture:
 
-This repository demonstrates the use of the Coordinator pattern in a Kotlin project using Jetpack Compose. The Coordinator pattern is employed to manage navigation and screen flows in a decoupled and reusable manner.
+```markdown
+# Kotlin Compose Coordinator Example
 
-## Project Structure
+This repository demonstrates a flexible navigation pattern for a Jetpack Compose application using the Coordinator pattern. The Coordinator pattern helps manage complex navigation flows and screen transitions within an Android app, providing a clear structure for controlling navigation between screens.
 
-The project is composed of several key interfaces and classes that define the coordinator pattern:
+## Overview
 
-### Interfaces
+This example introduces the `Coordinator` interface and its implementations, which enable clean and manageable navigation flows. The architecture is built with reusability and scalability in mind, making it easy to add new flows or coordinators without disrupting existing ones.
 
-- **`CoordinatorAction`**: A marker interface that all actions extend.
-- **`Coordinator`**: An interface that defines the contract for coordinators responsible for managing screen flows.
-- **`RootCoordinator`**: Extends `Coordinator` with the ability to start with a specific action.
-- **`NavigationRoute`**: Defines the navigation routes within the application.
-- **`Router`**: Defines navigation capabilities for coordinators.
+### Key Components
 
-### Sealed Classes
+1. **CoordinatorAction**: A sealed interface representing actions that can be handled by a `Coordinator`.
 
-- **`GeneralAction`**: Represents general actions like `Done` and `Cancel`.
-- **`AppCoordinatorAction`**: Represents actions specific to the `AppCoordinator`, like `GoToMain`, `GoToLogin`, and `LogOut`.
-- **`AuthCoordinatorAction`**: Represents actions specific to the `AuthCoordinator`, like `GoToSettings`, `Authenticated`, and `GoBack`.
+   ```kotlin
+   interface CoordinatorAction
+   ```
 
-### Coordinators
+2. **GeneralAction**: A sealed class that defines common actions, such as `Done` and `Cancel`.
 
-#### AppCoordinator
+   ```kotlin
+   sealed class GeneralAction : CoordinatorAction {
+       data class Done(val data: Any) : GeneralAction()
+       data class Cancel(val reason: Any) : GeneralAction()
+   }
+   ```
 
-The `AppCoordinator` is the root coordinator responsible for managing the overall flow of the application, including authentication and the main content.
+3. **Coordinator**: The core interface that all coordinators implement. Each coordinator can navigate, set up navigation, and handle actions. It also holds a reference to its parent coordinator.
+
+   ```kotlin
+   interface Coordinator {
+       val parent: Coordinator?
+
+       fun navigate(route: Navigable) {
+           parent?.navigate(route)
+       }
+
+       fun setupNavigation(builder: NavHostBuilder) {
+           // Default implementation can be overridden
+       }
+
+       @Composable
+       fun handle(action: CoordinatorAction)
+   }
+   ```
+
+4. **Host**: An interface that tracks the active coordinator.
+
+   ```kotlin
+   interface Host {
+       val activeCoordinator: Coordinator?
+   }
+   ```
+
+5. **HostCoordinator**: Combines the `Coordinator` and `Host` interfaces, enabling a coordinator to host other coordinators.
+
+   ```kotlin
+   interface HostCoordinator: Coordinator, Host
+   ```
+
+6. **RootCoordinator**: The main coordinator that initializes the navigation graph and handles global navigation actions. It extends `HostCoordinator` and includes a navigator for managing the navigation stack.
+
+   ```kotlin
+   interface RootCoordinator : HostCoordinator {
+       val navigator: Navigator
+       @Composable
+       fun start(action: AppCoordinatorAction)
+   }
+   ```
+
+## How It Works
+
+### App Flow
+
+- **RootCoordinator**: Manages the app's overall navigation flow and initializes either the authentication flow or the main flow based on the current state.
+  
+- **AuthCoordinator**: Manages the authentication flow, including login and settings screens.
+  
+- **MainCoordinator**: Manages the main flow, including the main screen and order-related screens.
+
+### Navigation
+
+Each `Coordinator` can define its navigation routes using the `setupNavigation` method. The `navigate` method is called to switch between different routes or screens within a flow. Coordinators can also delegate navigation to their parent coordinators, creating a nested and hierarchical navigation structure.
+
+## Usage
+
+### Setting Up Coordinators
+
+1. **RootCoordinator Implementation**:
+
+   ```kotlin
+   class AppCoordinator : RootCoordinator {
+       override val activeCoordinator: Coordinator? = null
+       override val navigator: Navigator = Navigator("root")
+
+       private val authCoordinator: AuthCoordinator by lazy { AuthCoordinator(this) }
+       private val mainCoordinator: MainCoordinator by lazy { MainCoordinator(this) }
+
+       @Composable
+       override fun start(action: AppCoordinatorAction) {
+           handle(action)
+       }
+
+       @Composable
+       override fun handle(action: CoordinatorAction) {
+           when (action) {
+               is AppCoordinatorAction.StartMainFlow -> {
+                   activeCoordinator = mainCoordinator
+                   navigator.navigateTo(MainNavigationRoute.MAIN.route)
+               }
+               is AppCoordinatorAction.StartLoginFlow -> {
+                   activeCoordinator = authCoordinator
+                   navigator.navigateTo(AuthNavigationRoute.LOGIN.route)
+               }
+               else -> throw IllegalArgumentException("Unsupported action")
+           }
+       }
+   }
+   ```
+
+2. **AuthCoordinator Implementation**:
+
+   ```kotlin
+   class AuthCoordinator(
+       override val parent: Coordinator
+   ) : Coordinator {
+
+       override fun setupNavigation(builder: NavHostBuilder) {
+           builder.composable(AuthNavigationRoute.LOGIN) {
+               LoginScreen(coordinator = this@AuthCoordinator)
+           }
+       }
+
+       @Composable
+       override fun handle(action: CoordinatorAction) {
+           // Handle auth-related actions here
+       }
+   }
+   ```
+
+3. **MainCoordinator Implementation**:
+
+   ```kotlin
+   class MainCoordinator(
+       override val parent: Coordinator
+   ) : Coordinator {
+
+       override fun setupNavigation(builder: NavHostBuilder) {
+           builder.composable(MainNavigationRoute.MAIN) {
+               MainScreen(coordinator = this@MainCoordinator)
+           }
+       }
+
+       @Composable
+       override fun handle(action: CoordinatorAction) {
+           // Handle main-related actions here
+       }
+   }
+   ```
+
+### Launching the App
+
+In your `MainActivity`, initialize the `AppCoordinator` and start the appropriate flow:
 
 ```kotlin
-class AppCoordinator(
-    private val navController: NavHostController
-) : RootCoordinator {
-
-    private var _authCoordinator: AuthCoordinator? = null
-    private var _mainCoordinator: MainCoordinator? = null
-
-    private val authCoordinator: AuthCoordinator
-        get() {
-            if (_authCoordinator == null) {
-                _authCoordinator = AuthCoordinator(navController)
-            }
-            return _authCoordinator!!
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            val appCoordinator = remember { AppCoordinator() }
+            appCoordinator.start(AppCoordinatorAction.StartLoginFlow)
         }
-
-    private val mainCoordinator: MainCoordinator
-        get() {
-            if (_mainCoordinator == null) {
-                _mainCoordinator = MainCoordinator(navController)
-            }
-            return _mainCoordinator!!
-        }
-
-    @Composable
-    override fun handle(action: CoordinatorAction) {
-        when (action) {
-            is GeneralAction.Done -> println("Done action with data: ${action.data}")
-            is GeneralAction.Cancel -> println("Cancelled with reason: ${action.reason}")
-            is AppCoordinatorAction.GoToMain -> mainCoordinator.start()
-            is AppCoordinatorAction.GoToLogin -> authCoordinator.start()
-            is AppCoordinatorAction.LogOut -> authCoordinator.start()
-            else -> throw IllegalArgumentException("Unsupported action")
-        }
-    }
-
-    @Composable
-    override fun start(action: AppCoordinatorAction) {
-        handle(action)
     }
 }
 ```
 
-#### AuthCoordinator
+### Navigating Between Screens
 
-The `AuthCoordinator` manages the flow for authentication, including navigating between the login and settings screens.
+Coordinators can navigate to different screens or delegate navigation to their parent coordinators:
 
 ```kotlin
-class AuthCoordinator(
-    private val navController: NavHostController,
-    override val initialScreen: NavigationRoute = AuthNavigationRoute.LOGIN
-) : Coordinator, Router {
-
-    override fun handle(action: CoordinatorAction) {
-        when (action) {
-            is GeneralAction.Done -> println("Done action with data: ${action.data}")
-            is GeneralAction.Cancel -> println("Cancelled with reason: ${action.reason}")
-            is AuthCoordinatorAction.GoToSettings -> navigate(AuthNavigationRoute.SETTINGS)
-            is AuthCoordinatorAction.GoBack -> navController.popBackStack()
-            is AuthCoordinatorAction.Authenticated -> { /* Handle authenticated action */ }
-            else -> throw IllegalArgumentException("Unsupported action")
-        }
-    }
-
-    @Composable
-    override fun start() {
-        NavHost(navController = navController, startDestination = initialScreen.title) {
-            composable(AuthNavigationRoute.LOGIN.title) {
-                LoginScreen(coordinator = this@AuthCoordinator)
-            }
-            composable(AuthNavigationRoute.SETTINGS.title) {
-                SettingsScreen(coordinator = this@AuthCoordinator)
-            }
-        }
-    }
-
-    override fun navigate(route: NavigationRoute) {
-        when (route) {
-            AuthNavigationRoute.LOGIN -> {
-                navController.navigate(route.title) {
-                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                }
-            }
-
-            AuthNavigationRoute.SETTINGS -> {
-                navController.navigate(route.title)
-            }
-
-            else -> throw IllegalArgumentException("Unsupported route")
-        }
-    }
+override fun navigate(route: Navigable) {
+    parent?.navigate(route)
 }
 ```
 
-### Usage
+## Conclusion
 
-To navigate between screens using the coordinator pattern, simply invoke the `handle` method with the appropriate action.
-
-For example, navigating to the settings screen from the login screen:
-
-```kotlin
-@Composable
-fun <T : Coordinator> LoginScreen(coordinator: T) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Login Screen")
-        Button(onClick = { coordinator.handle(AuthCoordinatorAction.GoToSettings) }) {
-            Text("Go To Settings")
-        }
-        Button(onClick = { coordinator.handle(AppCoordinatorAction.GoToMain) }) {
-            Text("Go To Main")
-        }
-    }
-}
-```
-
-### Navigation Routes
-
-Define the navigation routes within the app using `enum` classes:
-
-```kotlin
-enum class AuthNavigationRoute(override val title: String) : NavigationRoute {
-    LOGIN("login"),
-    SETTINGS("settings"),
-}
-```
-
-### Conclusion
-
-This example showcases a simple yet powerful implementation of the Coordinator pattern in a Kotlin Compose application. It allows for clean separation of navigation logic, making the codebase modular, testable, and easy to extend.
+This pattern provides a scalable and flexible navigation architecture for Jetpack Compose applications. It decouples navigation logic from UI components, making it easier to manage complex navigation flows. The Coordinator pattern is especially useful for large applications with multiple flows and nested navigation requirements.
