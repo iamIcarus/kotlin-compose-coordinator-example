@@ -3,6 +3,7 @@ import androidx.compose.runtime.Composable
 import com.example.coordinators.ui.coordinators.Coordinator
 import com.example.coordinators.ui.coordinators.CoordinatorAction
 import com.example.coordinators.ui.coordinators.HostCoordinator
+import com.example.coordinators.ui.coordinators.auth.AuthCoordinator
 import com.example.coordinators.ui.coordinators.main.MainCoordinatorAction
 import com.example.coordinators.ui.navigation.NavHostBuilder
 import com.example.coordinators.ui.navigation.Navigable
@@ -23,7 +24,6 @@ sealed class OrdersCoordinatorAction : CoordinatorAction {
 class OrdersCoordinator(
     override val parent: Coordinator
 ) : Coordinator {
-    //private val localNavigator: Navigator = Navigator(OrdersNavigationRoute.ORDER_LIST.route)
 
     override fun setupNavigation(builder: NavHostBuilder) {
         builder.composable(OrdersNavigationRoute.ORDER_LIST) {
@@ -51,3 +51,11 @@ class OrdersCoordinator(
         }
     }
 }
+
+
+class OrdersCoordinatorFactory {
+    fun create(parent: Coordinator): Coordinator {
+        return OrdersCoordinator(parent = parent)
+    }
+}
+
