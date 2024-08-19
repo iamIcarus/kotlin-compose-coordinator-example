@@ -6,8 +6,8 @@ import com.example.coordinators.ui.coordinators.HostCoordinator
 import com.example.coordinators.ui.coordinators.main.MainCoordinatorAction
 import com.example.coordinators.ui.navigation.NavHostBuilder
 import com.example.coordinators.ui.navigation.Navigable
-import com.example.coordinators.ui.screens.orders.OrderDetailScreen
-import com.example.coordinators.ui.screens.orders.OrderListScreen
+import com.example.coordinators.ui.view.screens.orders.OrderDetailScreen
+import com.example.coordinators.ui.view.screens.orders.OrderListScreen
 
 enum class OrdersNavigationRoute(override val route: String) : Navigable {
     ORDER_LIST("orderList"),

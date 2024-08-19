@@ -5,8 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.example.coordinators.ui.coordinators.auth.AuthCoordinator
+import com.example.coordinators.ui.coordinators.auth.AuthCoordinatorFactory
 import com.example.coordinators.ui.coordinators.auth.AuthNavigationRoute
 import com.example.coordinators.ui.coordinators.main.MainCoordinator
+import com.example.coordinators.ui.coordinators.main.MainCoordinatorFactory
 import com.example.coordinators.ui.coordinators.main.MainNavigationRoute
 import com.example.coordinators.ui.navigation.NavHost
 import com.example.coordinators.ui.navigation.NavHostBuilder
@@ -20,7 +22,10 @@ sealed class AppCoordinatorAction : CoordinatorAction {
     data object LogOut : AppCoordinatorAction()
 }
 
-class AppCoordinator() : RootCoordinator {
+class AppCoordinator(
+    private val authCoordinatorFactory: AuthCoordinatorFactory,
+    private val mainCoordinatorFactory: MainCoordinatorFactory
+) : RootCoordinator {
     override val parent: Coordinator? = null
 
     private var _activeCoordinator by mutableStateOf<Coordinator?>(null)
@@ -30,9 +35,13 @@ class AppCoordinator() : RootCoordinator {
     // Root navigator that manages all flows
     override val navigator: Navigator = Navigator("root")
 
-    private val authCoordinator: Coordinator by lazy { AuthCoordinator(this) }
-    private val mainCoordinator: Coordinator by lazy { MainCoordinator(this) }
-
+    // Coordinators are created on demand, avoiding circular dependencies
+    private val authCoordinator: Coordinator by lazy {
+        authCoordinatorFactory.create(parent = this)
+    }
+    private val mainCoordinator: Coordinator by lazy {
+        mainCoordinatorFactory.create(parent = this)
+    }
 
     @Composable
     override fun handle(action: CoordinatorAction) {
