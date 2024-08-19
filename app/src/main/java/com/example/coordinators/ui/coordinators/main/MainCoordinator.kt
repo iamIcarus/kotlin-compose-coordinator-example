@@ -9,7 +9,9 @@ import com.example.coordinators.ui.coordinators.Coordinator
 import com.example.coordinators.ui.coordinators.CoordinatorAction
 import com.example.coordinators.ui.coordinators.HostCoordinator
 import com.example.coordinators.ui.coordinators.RootCoordinator
+import com.example.coordinators.ui.coordinators.auth.AuthCoordinatorFactory
 import com.example.coordinators.ui.coordinators.orders.OrdersCoordinator
+import com.example.coordinators.ui.coordinators.orders.OrdersCoordinatorFactory
 import com.example.coordinators.ui.coordinators.orders.OrdersNavigationRoute
 import com.example.coordinators.ui.navigation.NavHostBuilder
 import com.example.coordinators.ui.navigation.Navigable
@@ -26,13 +28,14 @@ sealed class MainCoordinatorAction : CoordinatorAction {
 
 
 class MainCoordinator(
-    override val parent: Coordinator
-) : HostCoordinator {
+    override val parent: Coordinator,
+    private val ordersCoordinatorFactory: OrdersCoordinatorFactory
+    ) : HostCoordinator {
     private var _activeCoordinator by mutableStateOf<Coordinator?>(null)
     override val activeCoordinator: Coordinator?
         get() = _activeCoordinator
 
-    private val ordersCoordinator: OrdersCoordinator by lazy { OrdersCoordinator(this) }
+    private val ordersCoordinator: Coordinator by lazy { ordersCoordinatorFactory.create(parent = this) }
 
     override fun setupNavigation(builder: NavHostBuilder) {
         builder.composable(MainNavigationRoute.MAIN) {
@@ -58,8 +61,13 @@ class MainCoordinator(
     }
 }
 
-class MainCoordinatorFactory {
+class MainCoordinatorFactory(
+    private val ordersCoordinatorFactory: OrdersCoordinatorFactory
+) {
     fun create(parent: Coordinator): Coordinator {
-        return MainCoordinator(parent = parent)
+        return MainCoordinator(
+            parent = parent,
+            ordersCoordinatorFactory = ordersCoordinatorFactory
+        )
     }
 }
