@@ -6,6 +6,12 @@ This repository demonstrates a flexible navigation pattern for a Jetpack Compose
 
 This example introduces the `Coordinator` interface and its implementations, which enable clean and manageable navigation flows. The architecture is built with reusability and scalability in mind, making it easy to add new flows or coordinators without disrupting existing ones.
 
+### Flow Chart
+
+The following flow chart represents the hierarchy of coordinators in this example:
+
+![Hierarchy of Coordinators](img/Hierarchy.png)
+
 ### Key Components
 
 1. **CoordinatorAction**: A sealed interface representing actions that can be handled by a `Coordinator`.
