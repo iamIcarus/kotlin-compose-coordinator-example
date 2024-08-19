@@ -64,6 +64,8 @@ dependencies {
     implementation("io.github.raamcosta.compose-destinations:core:1.8.36-beta")
     implementation("androidx.compose.material:material:1.7.0-beta07")
     ksp("io.github.raamcosta.compose-destinations:ksp:1.8.36-beta")
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

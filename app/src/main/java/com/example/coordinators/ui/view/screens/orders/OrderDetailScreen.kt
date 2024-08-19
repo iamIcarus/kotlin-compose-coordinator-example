@@ -1,4 +1,4 @@
-package com.example.coordinators.ui.screens.orders
+package com.example.coordinators.ui.view.screens.orders
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

@@ -1,4 +1,4 @@
-package com.example.coordinators.ui.screens.login
+package com.example.coordinators.ui.view.screens.login
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

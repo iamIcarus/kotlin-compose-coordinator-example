@@ -8,6 +8,7 @@ import com.example.coordinators.ui.coordinators.AppCoordinatorAction
 import com.example.coordinators.ui.coordinators.Coordinator
 import com.example.coordinators.ui.coordinators.CoordinatorAction
 import com.example.coordinators.ui.coordinators.HostCoordinator
+import com.example.coordinators.ui.coordinators.RootCoordinator
 import com.example.coordinators.ui.coordinators.orders.OrdersCoordinator
 import com.example.coordinators.ui.coordinators.orders.OrdersNavigationRoute
 import com.example.coordinators.ui.navigation.NavHostBuilder
@@ -22,6 +23,7 @@ sealed class MainCoordinatorAction : CoordinatorAction {
     data object GoToOrders : MainCoordinatorAction()
     data object GoToMain : MainCoordinatorAction()
 }
+
 
 class MainCoordinator(
     override val parent: Coordinator
@@ -53,5 +55,11 @@ class MainCoordinator(
             }
             else -> throw IllegalArgumentException("Unsupported action")
         }
+    }
+}
+
+class MainCoordinatorFactory {
+    fun create(parent: Coordinator): Coordinator {
+        return MainCoordinator(parent = parent)
     }
 }

@@ -7,9 +7,10 @@ import com.example.coordinators.ui.coordinators.Coordinator
 import com.example.coordinators.ui.coordinators.CoordinatorAction
 import com.example.coordinators.ui.coordinators.GeneralAction
 import com.example.coordinators.ui.coordinators.HostCoordinator
+import com.example.coordinators.ui.coordinators.RootCoordinator
 import com.example.coordinators.ui.navigation.NavHostBuilder
 import com.example.coordinators.ui.navigation.Navigable
-import com.example.coordinators.ui.screens.login.SettingsScreen
+import com.example.coordinators.ui.view.screens.login.SettingsScreen
 
 enum class AuthNavigationRoute(override val route: String) : Navigable {
     LOGIN("login"),
@@ -21,6 +22,7 @@ sealed class AuthCoordinatorAction : CoordinatorAction {
     data object Authenticated : AuthCoordinatorAction()
     data object GoBack : AuthCoordinatorAction()
 }
+
 
 class AuthCoordinator(
     override val parent: Coordinator
@@ -48,3 +50,11 @@ class AuthCoordinator(
         }
     }
 }
+
+
+class AuthCoordinatorFactory {
+    fun create(parent: Coordinator): Coordinator {
+        return AuthCoordinator(parent = parent)
+    }
+}
+
