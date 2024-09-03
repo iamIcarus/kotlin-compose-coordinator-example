@@ -13,6 +13,7 @@ import com.example.coordinators.ui.coordinators.auth.AuthCoordinatorFactory
 import com.example.coordinators.ui.coordinators.orders.OrdersCoordinator
 import com.example.coordinators.ui.coordinators.orders.OrdersCoordinatorFactory
 import com.example.coordinators.ui.coordinators.orders.OrdersNavigationRoute
+import com.example.coordinators.ui.navigation.NavHost
 import com.example.coordinators.ui.navigation.NavHostBuilder
 import com.example.coordinators.ui.navigation.Navigable
 
@@ -37,11 +38,14 @@ class MainCoordinator(
 
     private val ordersCoordinator: Coordinator by lazy { ordersCoordinatorFactory.create(parent = this) }
 
+    override var rootBuilder: NavHostBuilder? = null
+
     override fun setupNavigation(builder: NavHostBuilder) {
         builder.composable(MainNavigationRoute.MAIN) {
             MainScreen(coordinator = this@MainCoordinator)
         }
-        ordersCoordinator.setupNavigation(builder)
+
+        rootBuilder = builder
     }
 
     @Composable
@@ -58,6 +62,9 @@ class MainCoordinator(
             }
             else -> throw IllegalArgumentException("Unsupported action")
         }
+
+        if(rootBuilder != null)
+            _activeCoordinator?.setupNavigation(rootBuilder!!)
     }
 }
 
