@@ -30,7 +30,8 @@ sealed class MainCoordinatorAction : CoordinatorAction {
 
 class MainCoordinator(
     override val parent: Coordinator,
-    private val ordersCoordinatorFactory: OrdersCoordinatorFactory
+    private val ordersCoordinatorFactory: OrdersCoordinatorFactory,
+    private val userID: String
     ) : HostCoordinator {
     private var _activeCoordinator by mutableStateOf<Coordinator?>(null)
     override val activeCoordinator: Coordinator?
@@ -46,6 +47,7 @@ class MainCoordinator(
         }
 
         rootBuilder = builder
+        println("UserID: $userID")
     }
 
     @Composable
@@ -71,10 +73,11 @@ class MainCoordinator(
 class MainCoordinatorFactory(
     private val ordersCoordinatorFactory: OrdersCoordinatorFactory
 ) {
-    fun create(parent: Coordinator): Coordinator {
+    fun create(parent: Coordinator, userID: String): Coordinator {
         return MainCoordinator(
             parent = parent,
-            ordersCoordinatorFactory = ordersCoordinatorFactory
+            ordersCoordinatorFactory = ordersCoordinatorFactory,
+            userID = userID
         )
     }
 }

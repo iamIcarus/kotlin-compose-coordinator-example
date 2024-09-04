@@ -17,7 +17,7 @@ import com.example.coordinators.ui.navigation.Navigator
 
 
 sealed class AppCoordinatorAction : CoordinatorAction {
-    data object StartMainFlow : AppCoordinatorAction()
+    data class StartMainFlow(var userID: String) : AppCoordinatorAction()
     data object StartLoginFlow : AppCoordinatorAction()
     data object LogOut : AppCoordinatorAction()
 }
@@ -39,14 +39,17 @@ class AppCoordinator(
     private val authCoordinator: Coordinator by lazy {
         authCoordinatorFactory.create(parent = this)
     }
-    private val mainCoordinator: Coordinator by lazy {
-        mainCoordinatorFactory.create(parent = this)
-    }
+
+    private var mainCoordinator: Coordinator? = null
 
     @Composable
     override fun handle(action: CoordinatorAction) {
         when (action) {
             is AppCoordinatorAction.StartMainFlow -> {
+                val userID = action.userID
+                if (mainCoordinator == null){
+                    mainCoordinator =  mainCoordinatorFactory.create(parent = this, userID = userID);
+                }
                 _activeCoordinator = mainCoordinator
                 navigator.navigateTo(MainNavigationRoute.MAIN.route)
             }
