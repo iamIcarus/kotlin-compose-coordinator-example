@@ -14,6 +14,9 @@ sealed class GeneralAction : CoordinatorAction {
 
 interface Host {
     val activeCoordinator: Coordinator?
+    var rootBuilder: NavHostBuilder?
+        get() = null
+        set(value) {}
 }
 
 interface Coordinator {

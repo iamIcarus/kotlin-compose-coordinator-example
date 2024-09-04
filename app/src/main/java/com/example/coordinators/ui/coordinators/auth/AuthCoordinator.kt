@@ -19,7 +19,7 @@ enum class AuthNavigationRoute(override val route: String) : Navigable {
 
 sealed class AuthCoordinatorAction : CoordinatorAction {
     data object GoToSettings : AuthCoordinatorAction()
-    data object Authenticated : AuthCoordinatorAction()
+    data class Authenticated(var userID: String) : AuthCoordinatorAction()
     data object GoBack : AuthCoordinatorAction()
 }
 
@@ -43,7 +43,10 @@ class AuthCoordinator(
             is GeneralAction.Done -> println("Done action with data: ${action.data}")
             is GeneralAction.Cancel -> println("Cancelled with reason: ${action.reason}")
             is AuthCoordinatorAction.GoToSettings -> navigate(AuthNavigationRoute.SETTINGS)
-            is AuthCoordinatorAction.Authenticated -> parent.handle(AppCoordinatorAction.StartMainFlow)
+            is AuthCoordinatorAction.Authenticated -> {
+                val userID = action.userID
+                parent.handle(AppCoordinatorAction.StartMainFlow(userID))
+            }
             is AuthCoordinatorAction.GoBack -> navigate(AuthNavigationRoute.LOGIN)
             is AuthCoordinatorAction.GoToSettings -> navigate(AuthNavigationRoute.SETTINGS)
             else -> throw IllegalArgumentException("Unsupported action")

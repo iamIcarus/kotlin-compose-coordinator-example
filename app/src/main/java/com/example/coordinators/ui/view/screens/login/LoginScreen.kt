@@ -64,7 +64,7 @@ fun <T : Coordinator> LoginScreen(coordinator: T) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(onClick = { action = AuthCoordinatorAction.Authenticated }) {
+            Button(onClick = { action = AuthCoordinatorAction.Authenticated(username) }) {
                 Text("Login")
             }
         }

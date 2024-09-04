@@ -13,6 +13,7 @@ import com.example.coordinators.ui.coordinators.auth.AuthCoordinatorFactory
 import com.example.coordinators.ui.coordinators.orders.OrdersCoordinator
 import com.example.coordinators.ui.coordinators.orders.OrdersCoordinatorFactory
 import com.example.coordinators.ui.coordinators.orders.OrdersNavigationRoute
+import com.example.coordinators.ui.navigation.NavHost
 import com.example.coordinators.ui.navigation.NavHostBuilder
 import com.example.coordinators.ui.navigation.Navigable
 
@@ -29,7 +30,8 @@ sealed class MainCoordinatorAction : CoordinatorAction {
 
 class MainCoordinator(
     override val parent: Coordinator,
-    private val ordersCoordinatorFactory: OrdersCoordinatorFactory
+    private val ordersCoordinatorFactory: OrdersCoordinatorFactory,
+    private val userID: String
     ) : HostCoordinator {
     private var _activeCoordinator by mutableStateOf<Coordinator?>(null)
     override val activeCoordinator: Coordinator?
@@ -37,11 +39,15 @@ class MainCoordinator(
 
     private val ordersCoordinator: Coordinator by lazy { ordersCoordinatorFactory.create(parent = this) }
 
+    override var rootBuilder: NavHostBuilder? = null
+
     override fun setupNavigation(builder: NavHostBuilder) {
         builder.composable(MainNavigationRoute.MAIN) {
             MainScreen(coordinator = this@MainCoordinator)
         }
-        ordersCoordinator.setupNavigation(builder)
+
+        rootBuilder = builder
+        println("UserID: $userID")
     }
 
     @Composable
@@ -58,16 +64,20 @@ class MainCoordinator(
             }
             else -> throw IllegalArgumentException("Unsupported action")
         }
+
+        if(rootBuilder != null)
+            _activeCoordinator?.setupNavigation(rootBuilder!!)
     }
 }
 
 class MainCoordinatorFactory(
     private val ordersCoordinatorFactory: OrdersCoordinatorFactory
 ) {
-    fun create(parent: Coordinator): Coordinator {
+    fun create(parent: Coordinator, userID: String): Coordinator {
         return MainCoordinator(
             parent = parent,
-            ordersCoordinatorFactory = ordersCoordinatorFactory
+            ordersCoordinatorFactory = ordersCoordinatorFactory,
+            userID = userID
         )
     }
 }
